@@ -1,9 +1,51 @@
-import React from 'react';
+import React, { useState } from 'react';
 import rightBg from '../images/container.png';
 import icon from '../images/icon.png';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const SignUp = () => {
+  const navigate = useNavigate();
+  const [signUpData, setSignUpData] = useState({
+    name: "",
+    dateofbirth: "",
+    email: "",
+    password: ""
+  });
+
+  const addSignUpData = (e) => {
+    const { name, value } = e.target;
+    setSignUpData(() => {
+      return {
+        ...signUpData,
+        [name]: value
+      }
+    })
+  }
+
+  const handleSignUp = async(e) => {
+    e.preventDefault();
+    const { name, dateofbirth, email, password } = signUpData;
+
+    const res = await fetch('/sign-up', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ name, dateofbirth, email, password })
+    });
+
+    const data = await res.json();
+
+    if(res.status !== 201 || !data) {
+      alert('Something went wrong');
+    } else {
+      alert('Sign Up Successfull');
+      setSignUpData({...signUpData, name: "", dateofbirth: "", email: "", password: ""});
+      navigate('/');
+    }
+  }
+
   return (
     <div className='flex justify-center items-center md:justify-between'>
       <div className='flex justify-center items-center w-[591px] h-screen'>
@@ -18,7 +60,7 @@ const SignUp = () => {
               <p className='w-60 sm:w-[399px] h-7 font-normal text-[14px] md:text-lg text-[#969696] text-center'>Sign up to enjoy the feature of HD</p>
             </div>
             <div className='mt-2'>
-              <form>
+              <form method='POST'>
                <div className='flex flex-col'>
                   <label htmlFor='name' className='text-[14px] md:text-base'>Name</label>
                   <input 
@@ -27,16 +69,20 @@ const SignUp = () => {
                     name='name'
                     type='text'
                     placeholder='Enter your Name'
+                    value={signUpData.name}
+                    onChange={addSignUpData}
                   />
                 </div>
                 <div className='flex flex-col mt-2'>
-                  <label htmlFor='Date of Birth' className='text-[14px] md:text-base'>Date of Birth</label>
+                  <label htmlFor='dateofbirth' className='text-[14px] md:text-base'>Date of Birth</label>
                   <input 
                     className='w-60 sm:w-[399px] h-8 md:h-12 text-[14px] md:text-base border-slate-300 border-solid border-[2px] rounded-lg p-2'
-                    id='Date of Birth'
-                    name='Date of Birth'
+                    id='dateofbirth'
+                    name='dateofbirth'
                     type='date'
                     placeholder='Enter your Date of Birth'
+                    value={signUpData.dateofbirth}
+                    onChange={addSignUpData}
                   />
                 </div>
                 <div className='flex flex-col mt-2'>
@@ -47,6 +93,8 @@ const SignUp = () => {
                     name='email'
                     type='text'
                     placeholder='Enter your Email'
+                    value={signUpData.email}
+                    onChange={addSignUpData}
                   />
                 </div>
                 <div className='flex flex-col mt-2'>
@@ -57,10 +105,16 @@ const SignUp = () => {
                     name='password'
                     type='password'
                     placeholder='Enter your Password'
+                    value={signUpData.password}
+                    onChange={addSignUpData}
                   />
                 </div>             
                 <p className='text-blue-500 mt-2 hover:underline text-[14px] md:text-base'>Forgot password?</p>
-                <button className='bg-blue-500 text-white w-60 sm:w-[399px] h-8 md:h-12 rounded-lg mt-4 hover:scale-110 text-[14px] md:text-base'>Sign up</button>
+                <button className='bg-blue-500 text-white w-60 sm:w-[399px] h-8 md:h-12 rounded-lg mt-4 hover:scale-110 text-[14px] md:text-base' type='submit' onClick={handleSignUp} 
+                  disabled={!signUpData.name || !signUpData.dateofbirth || !signUpData.email || !signUpData.password}
+                >
+                  Sign up
+                </button>
               </form>
               <p className='text-center text-slate-400 mt-1'>or</p>
               <button className='w-60 sm:w-[399px] h-8 md:h-12 border-slate-300 border-solid border-[2px] rounded-lg mt-1 md:mt-3 hover:scale-110 text-[14px] md:text-base'>Sign in with Google</button>

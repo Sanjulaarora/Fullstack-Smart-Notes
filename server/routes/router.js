@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Notes = require('../models/notesSchema');
+const Users = require('../models/usersSchema');
 
 // create notes
 router.post('/add-notes', async(req, res) => {
@@ -41,97 +42,33 @@ router.delete('/delete-notes/:id', async(req, res) => {
     }
 });
 
-// post userSignUpData API
-router.post("/postUsers", async(req, res) => {
-    const {name, dateofbirth, email, password} = req.body;
+//post users (sign-up)
+router.post('/sign-up', async(req, res) => {
+    const { name, dateofbirth, email, password } = req.body;
 
     if(!name || !dateofbirth || !email || !password) {
-        res.status(422).json({error:"fill all the data"});
+        res.status(401).json({error: "Please fill all the fields"});
     };
 
-    try{
-        const preuser = await Users.findOne({email:email});
-
-        if(preuser) {
-            res.status(422).json({error:"this user already exists"})
-        } else {
-            const finalUser = new Users({
-                name, dateofbirth, email, password
-            });
-
-            // password hashing process   
-
-            const storeData = await finalUser.save();
-            console.log(storeData);
-            res.status(201).json(storeData);
-        }
-
-    } catch(error) {
-        console.log("error" + error.message);
-    }
-});
-
-
-//post userSignIn data API ( User SignIn)
-router.post("/signIn", async(req, res) => {
-    const { email, password } = req.body;
-
-    if( !email || !password ){
-        res.status(400).json({ error:"fill all the details" });
-    }
-
     try {
-        const userSignin = await Users.findOne({email:email});
-        if(userSignin) {
-           const isMatch = await bcrypt.compare(password, userSignin.password);
-           if(!isMatch) {
-              res.status(400).json({ error:"Invalid Credentials" });
-            } else {
-                //token generate
-                const token = await userSignin.generateAuthToken();
+      const preUser = await Users.findOne({email:email});
 
-                //cookie generate
-                res.cookie("SmartNote", token, {
-                    expires: new Date(Date.now() + 900000),
-                    httpOnly: true
-                });
-                res.status(201).json({ userSignin });
-            }
-
-        } else {
-            res.status(400).json({ error:"User Do Not Exist"});
-        }
-    } catch (error) {
-        res.status(400).json({ error:"Invalid Credentials"});
-    }
-});
-
-// get user is login or not
-router.get("/validuser", authenticate, async (req, res) => {
-    try {
-        const validUser = await Users.findOne({ _id: req.userID });
-        console.log(validUser + "User is Signed In");
-        res.status(201).json(validUser);
-    } catch (error) {
-        console.log(error + "error for valid user");
-    }
-});
-
-//User SignOut
-router.get("/sign-out", authenticate, async(req, res) => {
-    try {
-        req.rootUser.tokens = req.rootUser.tokens.filter((currEle) => {
-            return currEle.token !== req.token
+      if(preUser) {
+        res.status(401).json({error: "This user is already present"});
+      } else {
+        const addUser = new Users({
+            name, dateofbirth, email, password
         });
 
-        res.clearCookie("SmartNote");
+        //password hashing process
 
-        req.rootUser.save();
-        res.status(201).json(req.rootUser.tokens);
-        console.log("User SignOut");
-    } catch (error) {
-        console.log("Error for User SignOut");
+        const newUser = await addUser.save();
+        console.log(newUser);
+        res.status(201).json({newUser});
+      }
+    } catch(error) {
+      res.status(400).json({error: error.message});
     }
-});
+})
 
 module.exports = router;
