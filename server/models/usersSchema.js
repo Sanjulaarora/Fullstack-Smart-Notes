@@ -13,7 +13,6 @@ const usersSchema = new mongoose.Schema({
     dateofbirth: {
         type: String,
         required: true,
-        unique: true
     },
     email: {
         type: String,

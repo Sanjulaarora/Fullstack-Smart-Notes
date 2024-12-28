@@ -4,7 +4,7 @@ const secretKey = process.env.KEY;
 
 const authenticate = async(req, res, next)=>{
     try {
-        const token = req.cookies.Shoecompany;
+        const token = req.cookies.Smartnotes;
         const verifyToken = jwt.verify(token, secretKey);
         const rootUser = await Users.findOne({_id:verifyToken._id,"tokens.token":token});
        

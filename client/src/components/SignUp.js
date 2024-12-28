@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 
 const SignUp = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const [signUpData, setSignUpData] = useState({
     name: "",
@@ -25,25 +26,35 @@ const SignUp = () => {
 
   const handleSignUp = async(e) => {
     e.preventDefault();
+
+    setIsLoading(true);
+
     const { name, dateofbirth, email, password } = signUpData;
 
-    const res = await fetch('/sign-up', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ name, dateofbirth, email, password })
-    });
+    try {
+      const res = await fetch('/sign-up', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, dateofbirth, email, password })
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if(res.status !== 201 || !data) {
-      alert('Something went wrong');
-    } else {
-      alert('Sign Up Successfull');
-      setSignUpData({...signUpData, name: "", dateofbirth: "", email: "", password: ""});
-      navigate('/');
-    }
+      if(res.status !== 201 || !data) {
+        alert('Something went wrong');
+      } else {
+        alert('Sign Up Successfull');
+        setSignUpData({...signUpData, name: "", dateofbirth: "", email: "", password: ""});
+        navigate('/');
+      }
+    } catch(error) {
+      console.log("Error during sign-up: ", error);
+      alert("Something went wrong. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    } 
   }
 
   return (
@@ -56,7 +67,7 @@ const SignUp = () => {
           </div>
           <div className='flex flex-col justify-center items-center mt-4 md:mt-10'>
             <div className='flex flex-col'>
-              <p className='w-60 sm:w-[399px] md:w-32 h-11 font-extrabold md:font-bold text-[20px] md:text-2xl text-center'>Sign up</p>
+              <p className='w-60 sm:w-[399px] md:w-32 h-11 font-extrabold md:font-bold text-[20px] md:text-2xl text-center'>Sign Up</p>
               <p className='w-60 sm:w-[399px] h-7 font-normal text-[14px] md:text-lg text-[#969696] text-center'>Sign up to enjoy the feature of HD</p>
             </div>
             <div className='mt-2'>
@@ -109,11 +120,10 @@ const SignUp = () => {
                     onChange={addSignUpData}
                   />
                 </div>             
-                <p className='text-blue-500 mt-2 hover:underline text-[14px] md:text-base'>Forgot password?</p>
                 <button className='bg-blue-500 text-white w-60 sm:w-[399px] h-8 md:h-12 rounded-lg mt-4 hover:scale-110 text-[14px] md:text-base' type='submit' onClick={handleSignUp} 
                   disabled={!signUpData.name || !signUpData.dateofbirth || !signUpData.email || !signUpData.password}
                 >
-                  Sign up
+                  {isLoading ? "Signing Up": "Sign Up"}
                 </button>
               </form>
               <p className='text-center text-slate-400 mt-1'>or</p>
