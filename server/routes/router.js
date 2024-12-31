@@ -3,6 +3,7 @@ const router = express.Router();
 const Notes = require('../models/notesSchema');
 const Users = require('../models/usersSchema');
 const bcrypt = require('bcryptjs');
+const authenticate = require('../middleware/authenticate');
 
 // create notes
 router.post('/add-notes', async(req, res) => {
@@ -104,6 +105,25 @@ router.post('/sign-in', async(req, res) => {
         }
     } catch(error) {
       res.status(400).json({error: "Invalid Credentials."})
+    }
+});
+
+//user logout (sign-out)
+router.get('/sign-out', authenticate, async(req, res) => {
+    try {
+        const token = req.token;
+
+        req.rootUser.tokens = req.rootUser.tokens.filter((currEle) => currEle.token !== token );
+
+        await req.rootUser.save();
+
+        res.clearCookie("Smartnotes", { path: "/" });
+
+        res.status(200).json({message: "User signed out successfully"});
+        console.log("User Signed Out");
+    } catch(error) {
+        console.log("Error during sign out: ", error.message);
+        res.status(500).json({error: "Sign-out failed"});
     }
 });
 

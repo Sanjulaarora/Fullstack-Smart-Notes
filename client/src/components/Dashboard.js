@@ -3,12 +3,14 @@ import logo from '../images/icon.png';
 import { FaTrashCan } from 'react-icons/fa6';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchNotes } from '../features/NotesSlice';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   const { isLoading, data, isError } = useSelector((state) => state.notes);
   const dispatch = useDispatch();
   const [notes, setNotes] = useState([]);
   const [noteTitle, setNoteTitle] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     dispatch(fetchNotes());
@@ -57,6 +59,28 @@ const Dashboard = () => {
     }
   }
 
+  const handleSignOut = async() => {
+    const res = await fetch('/sign-out', {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      credentials: "include"
+    });
+
+    const data = await res.json();
+
+    if(res.status !== 200 || !data) {
+      alert("Sign Out not Successfull");
+      console.log("error");
+    } else {
+      console.log("data is valid");
+      alert("Sign-out successfull");
+      navigate("/");
+    }
+  }
+
   return (
     <div id='dashboard' className='w-1/2 mx-auto p-6'>
       <div>
@@ -65,7 +89,7 @@ const Dashboard = () => {
             <img className='h-5 w-5 hover:scale-125' src={logo} alt={'icon-logo'} loading='lazy'/>
             <span className='ml-1 sm:ml-10 text-[12px] sm:text-base md:text-lg'>Dashboard</span>
           </div>
-          <span className='text-[#367AFF] underline text-[10px] sm:text-sm md:text-base hover:scale-110'>Sign Out</span>
+          <span className='text-[#367AFF] underline text-[10px] sm:text-sm md:text-base hover:scale-110' role='button' onClick={handleSignOut}>Sign Out</span>
         </div>
         <div className='flex flex-col h-36 w-3/4 mx-auto rounded-lg shadow-xl p-5 md:p-10'>
           <p className='text-center font-bold md:font-extrabold text-base sm:text-lg md:text-3xl'>Welcome, Sanjula Arora !</p>
@@ -87,9 +111,9 @@ const Dashboard = () => {
           {!isLoading && isError && <p>{isError}</p>}
           {!isLoading && !isError && (notes.length ?
             notes.map((note) => (
-              <div className='flex justify-between h-9 sm:h-16 w-5/6 mx-auto rounded-lg shadow-xl p-2 sm:p-5 mt-2'>
-              <span className='text-sm md:text-base'>{note.title}</span>
-              <FaTrashCan role='button' onClick={() => handleDelete(note._id)} className='ml-1 sm:ml-0 hover:scale-125'/>
+              <div className='flex justify-between h-9 sm:h-16 w-5/6 mx-auto rounded-lg shadow-xl p-2 sm:p-5 mt-2' key={note._id}>
+                <span className='text-sm md:text-base'>{note.title}</span>
+                <FaTrashCan role='button' onClick={() => handleDelete(note._id)} className='ml-1 sm:ml-0 hover:scale-125'/>
             </div>
             ))
             :
